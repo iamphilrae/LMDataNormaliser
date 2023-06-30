@@ -41,15 +41,16 @@ class Utilities
 
 
         $allowed_tags =  is_array($non_default_allowed_tags) ? $non_default_allowed_tags : [
-            'a', 'strong', 'em', 'img', 'figure', 'figcaption', 'picture', 'source',
+            'a', 'img', 'figure', 'picture', 'source',
             'table', 'tr', 'td', 'th', 'thead', 'tbody', 'col', 'colgroup',
             'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'blockquote',
             'ul', 'ol', 'li'
         ];
 
-        // Replace various UTF-8 codes for spaces
-        $text = str_replace(["\n", "\t", "\v", "\0", "\xAD"], '', $text);
+        // Replace various UTF-8 codes for spaces or remove altogether
+////    $text = str_replace(["\n", "\t", "\v", "\0", "\xAD"], '', $text);
         $text = str_replace(["&nbsp;", " "], ' ', $text);
+        $text = str_replace(["​"], '', $text);
 
         // Replace UTF-8 character codes for real characters
         $text = str_replace(["&#x27;", "&apos;"], "’", $text);
@@ -65,61 +66,12 @@ class Utilities
         // Convert HTML entities into their respective characters
         $text = html_entity_decode($text);
 
-
-        // Perform some DOM operations to the content to remove unwanted attributes
-        $text_dom = (new Dom)->loadStr($text);
-
-        // Only need to loop through the tags that have been allowed through strip_tags
-        foreach(array_merge( $allowed_tags, ['p'] ) as $selector)
-        {
-            foreach($text_dom->find($selector) as $tag)
-            {
-                $reserved_attr = [];
-
-                switch($tag->getTag()->name())
-                {
-                    case 'a': {
-                        $reserved_attr['href'] = $tag->getAttribute('href');
-                        $reserved_attr['title'] = $tag->getAttribute('title');
-                        break;
-                    }
-                    case 'img': {
-                        $reserved_attr['src'] = $tag->getAttribute('src');
-                        $reserved_attr['srcset'] = $tag->getAttribute('srcset');
-                        $reserved_attr['alt'] = $tag->getAttribute('alt');
-                        $reserved_attr['title'] = $tag->getAttribute('title');
-                        $reserved_attr['width'] = $tag->getAttribute('width');
-                        $reserved_attr['height'] = $tag->getAttribute('height');
-                        break;
-                    }
-                    case 'source': {
-                        $reserved_attr['src'] = $tag->getAttribute('src');
-                        $reserved_attr['srcset'] = $tag->getAttribute('srcset');
-                        $reserved_attr['media'] = $tag->getAttribute('media');
-                        break;
-                    }
-                }
-
-                // Remove all attributes from all tags
-                $tag->removeAllAttributes();
-
-                // Add back in the reserved attributes
-                foreach($reserved_attr as $attr_name=>$attr_value)
-                {
-                    if(!empty($attr_value))
-                        $tag->setAttribute($attr_name, $attr_value);
-                }
-            }
-        }
-
         // Add new lines under each block level tag
         $text = str_replace(
             ["<ul>", "</ul>", "</li>", "</h1>", "</h2>", "</h3>", "</h4>", "</h5>", "</h6>", "</p>", "</table>", "</blockquote>", "</figure>"],
             ["<ul>\n","</ul>\n\n", "</li>\n", "</h1>\n\n", "</h2>\n\n", "</h3>\n\n", "</h4>\n\n", "</h5>\n\n", "</h6>\n\n", "</p>\n\n", "</table>\n\n", "</blockquote>\n\n", "</figure>\n\n"],
-            $text_dom
+            $text
         );
-        unset($text_dom);
-
 
         // Now strip out the P tags to prevent nested <p> tags and <p>&nbsp;</p> line break occurrences
         $text = strip_tags($text , $allowed_tags);

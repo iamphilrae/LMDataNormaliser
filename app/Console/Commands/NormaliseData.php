@@ -224,14 +224,35 @@ class NormaliseData extends Command
         if(str_contains($str, '<style'))
             $note_lines[] = 'String contains a <style> tag. Check the reason for this formatting.';
 
+        if(str_contains($str, '<h'))
+            $note_lines[] = 'String contains a <hX> tag. Check the reason for this formatting.';
+
         if(str_contains($str, '<a'))
             $note_lines[] = 'String contains an <a> tag. Will need to de-link and re-word to suit.';
+
+        if(str_contains($str, '<blockquote'))
+            $note_lines[] = 'String contains an <blockquote> tag. Check the reason for this formatting.';
 
         if(str_contains($str, '<ul')
             || str_contains($str, '<ol')
             || str_contains($str, '<dl'))
             $note_lines[] = 'String contains a list tag. Will need to re-format manually.';
 
+
+        if(str_contains($str, '<table')
+            || str_contains($str, '<tr')
+            || str_contains($str, '<th')
+            || str_contains($str, '<td')
+            || str_contains($str, '<col')
+            || str_contains($str, '<colgroup'))
+            $note_lines[] = 'String contains a table. Will need to re-format manually.';
+
+        if(str_contains($str, '<img')
+            || str_contains($str, '<figure')
+            || str_contains($str, '<picture')
+            || str_contains($str, '<source')
+            || str_contains($str, '<object'))
+            $note_lines[] = 'String contains an image tag. Will need to re-format manually.';
 
         if(empty($note_lines))
             return null;

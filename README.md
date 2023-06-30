@@ -8,6 +8,8 @@ This utility is built as a PHP CLI application on top of the [Laravel](https://l
 
 ## Usage
 
+### Normalise a single data field
+
 ```bash
 # Normalise a dataset from a single field ('primary_key', 'output' and 'report' are optional)
 php artisan app:normalise-data schema table field 
@@ -15,6 +17,21 @@ php artisan app:normalise-data schema table field
   --output=./storage/output/%schema%.%table%.%field%;normalised.json \
   --report=./storage/output/%schema%.%table%.%field%;report.csv
 ```
+
+### Normalise a batch of fields
+
+The following file contains a list of `scheme.table.field` combinations which a batch normalisation process will take place on:
+
+`/storage/app/data/fields_to_batch_normalise.json`
+
+Running the following will perform the batch normalisation over that file:
+
+```bash
+# Batch normalise a dataset from a multiple fields
+php artisan app:normalise-data-batch
+```
+
+
 
 ## What is Normalised?
 
