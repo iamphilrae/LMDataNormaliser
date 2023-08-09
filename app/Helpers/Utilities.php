@@ -38,7 +38,8 @@ class Utilities
 
         if ( trim($text) === '' )
             return '';
-
+        else
+            $text = trim($text);
 
         $allowed_tags =  is_array($non_default_allowed_tags) ? $non_default_allowed_tags : [
             'a', 'img', 'figure', 'picture', 'source',
@@ -48,7 +49,6 @@ class Utilities
         ];
 
         // Replace various UTF-8 codes for spaces or remove altogether
-////    $text = str_replace(["\n", "\t", "\v", "\0", "\xAD"], '', $text);
         $text = str_replace(["&nbsp;", " "], ' ', $text);
         $text = str_replace(["​"], '', $text);
 
@@ -56,6 +56,12 @@ class Utilities
         $text = str_replace(["&#x27;", "&apos;"], "’", $text);
         $text = str_replace(["&#039;"], "'", $text);
 
+        // Replace double BR tags
+        $text = str_replace(
+            ["<br/><br/>", "<br><br>", "<br></br>"],
+            ["\n\n", "\n\n", "\n\n"],
+            $text
+        );
 
         // Remove P tags of entirely whitespace
         $text = preg_replace( '|<p>\s*</p>|', '', $text);
@@ -73,11 +79,10 @@ class Utilities
             $text
         );
 
-        // Now strip out the P tags to prevent nested <p> tags and <p>&nbsp;</p> line break occurrences
+        // Strip out the P tags to prevent nested <p> tags and <p>&nbsp;</p> line break occurrences
         $text = strip_tags($text , $allowed_tags);
 
         // Replace multiple new lines with a double one
-        $text = preg_replace("/[\r\n]+/", "\n\n", $text);
         $text = preg_replace( "/\n\n+/", "\n\n", $text);
 
         // Remove space character if immediately following a new line

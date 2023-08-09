@@ -34,6 +34,14 @@ class NormaliseDataBatch extends Command
     public function handle()
     {
         try {
+            DB::connection()->getPdo();
+        }
+        catch (\Exception $e) {
+            die("Could not connect to the database.  Please check your configuration. error:" . $e );
+        }
+
+
+        try {
             $batch_list = Storage::disk('local')->get('data/fields_to_batch_normalise.json');
             $batch_list = json_decode( $batch_list, true );
 
@@ -71,58 +79,4 @@ class NormaliseDataBatch extends Command
         }
     }
 
-
-    /**
-     * Checks for whether a given piece of content has any complex changes which will likely need manual intervention. If 'null' is returned then automated normalisation can happen.
-     *
-     * @param string $str
-     * @return string|null
-     */
-    private function getNotesAboutContent(string|null $str): string|null {
-
-        $note_lines = [];
-
-        /*
-         * Check for anything that can cause issues when normalising and so could seek manual intervention.
-         */
-        if(empty($str))
-            return null;
-
-
-        $str = strtolower($str);
-
-        if(str_contains($str, '<font'))
-            $note_lines[] = 'String contains a <font> tag. Check the reason for this formatting.';
-
-        if(str_contains($str, '<style'))
-            $note_lines[] = 'String contains a <style> tag. Check the reason for this formatting.';
-
-        if(str_contains($str, '<a'))
-            $note_lines[] = 'String contains an <a> tag. Will need to de-link and re-word to suit.';
-
-        if(str_contains($str, '<ul')
-            || str_contains($str, '<ol')
-            || str_contains($str, '<dl'))
-            $note_lines[] = 'String contains a list tag. Will need to re-format manually.';
-
-
-        if(empty($note_lines))
-            return null;
-
-        $response = '';
-        foreach($note_lines as $ln)
-            $response .= $ln.PHP_EOL;
-
-        return $response;
-    }
-
-    /**
-     * Reformats and normalises a string so that it can be re-inserted into the DB as a manual process.
-     *
-     * @param string $str
-     * @return string
-     */
-    private function getNormalisedContent(string $str): string {
-        return Utilities::clean_html($str, []);
-    }
 }

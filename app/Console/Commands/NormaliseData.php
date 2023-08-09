@@ -23,8 +23,8 @@ class NormaliseData extends Command
             {field : The database field to retrieve}
             {--no-output : If present, will only create the CSV report, not the output JSON}
             {--primary-key=id : The primary key of the database table}
-            {--output=./output/%schema%.%table%.%field%;normalised.json : The format of the output data file (optional)} \
-            {--report=./output/%schema%.%table%.%field%;report.csv : The format of the output report file (optional)}';
+            {--output=./output/%schema%/%table%.%field%;normalised.json : The format of the output data file (optional)} \
+            {--report=./output/%schema%/%table%.%field%;report.csv : The format of the output report file (optional)}';
 
     /**
      * The console command description.
@@ -166,7 +166,18 @@ class NormaliseData extends Command
                     [$this->argument('schema'), $this->argument('table'), $this->argument('field')],
                     $this->option('output'));
 
+                $output_filename_non_escaped = str_replace('.json', '.txt', $output_filename);
+                $output_non_escaped = "";
+
+                foreach($output as $v) {
+                    foreach($v as $k2=>$v2)
+                        $output_non_escaped .= strtoupper($k2) . ": [START]" . $v2 . "[END]\n";
+
+                    $output_non_escaped .= "---\n";
+                }
+
                 Storage::disk('local')->put($output_filename, json_encode($output, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+                Storage::disk('local')->put($output_filename_non_escaped, $output_non_escaped);
             }
 
             $report_filename = str_replace(
